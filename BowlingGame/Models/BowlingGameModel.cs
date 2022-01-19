@@ -29,6 +29,7 @@
         {
             public int GameID { get; set; }
             public string playerName { get; set; }
+            public int? score { get; set; }
 
             public List<Frame> Frames { get; } = new();
         }
@@ -36,10 +37,20 @@
         public class Frame
         {
             public int FrameID { get; set; }
-            public int score { get; set; }
-
+            public int frameNumber { get; set; }
+            public bool isFinished { get; set; }
+            public List<Score> scores { get; set; }
             public int GameID { get; set; }
             public Game Game { get; set; }
+        }
+        public class Score
+        {
+            public int scoreID { get; set; }
+            public int scoreNumber { get; set; }
+            public bool isSpare { get; set; }
+            public bool isStrike { get; set; }
+            public int FrameID { get; set; }
+            public Frame Frame { get; set; }
         }
 
 }

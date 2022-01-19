@@ -35,12 +35,24 @@ namespace BowlingGame.Controllers
             dynamic gameList = new ExpandoObject();
             using (BowlingGameContext context = new())
             {
-                gameList.
+                gameList = context.Games.ToList().Select(x =>
+                {
+                    dynamic game = new ExpandoObject();
+                    game.id = x.GameID;
+                    game.name = x.playerName;
+                    game.score = x.score ?? 0;
+                    return game;
+                }).ToList();
+                return gameList;
             }
         }
         [HttpPost]
         public dynamic CreateBowlingGame(string name)
         {
+            if(name == null || name == "")
+            {
+                return new { code = 0, message = "Please enter your name" };
+            }
             using(BowlingGameContext context = new())
             {
                 Game game = new Game
@@ -49,9 +61,30 @@ namespace BowlingGame.Controllers
                 };
                 context.Games.Add(game);
                 context.SaveChanges();
-                return new { code = 0, message = "test", data = context.Games.ToList() };
+                return new { code = 1 };
             }
            
+        }
+        [HttpPost]
+        public dynamic deleteGame(int id)
+        {
+            using(BowlingGameContext context = new())
+            {
+                var game = context.Games.Where(g => g.GameID == id).FirstOrDefault();
+                if (game != null)
+                {
+                    context.Games.Remove(game);
+                    context.SaveChanges();
+                    return new { code = 1 };
+                }
+                else
+                {
+                    return new { code = 0, message = "An error occured deleting your game. Please refresh and try again" };
+
+
+                }
+
+            }
         }
     }
 }
