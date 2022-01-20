@@ -9,6 +9,7 @@
         {
             public DbSet<Game> Games { get; set; }
             public DbSet<Frame> Frames { get; set; }
+            public DbSet<Score> Scores { get; set; }
 
             public string DbPath { get; }
 
@@ -30,6 +31,7 @@
             public int GameID { get; set; }
             public string playerName { get; set; }
             public int? score { get; set; }
+            public bool isFinished { get; set; }
 
             public List<Frame> Frames { get; } = new();
         }
@@ -39,6 +41,8 @@
             public int FrameID { get; set; }
             public int frameNumber { get; set; }
             public bool isFinished { get; set; }
+            public bool isScored { get; set; }
+            public int frameScore { get; set; }
             public List<Score> scores { get; set; }
             public int GameID { get; set; }
             public Game Game { get; set; }
@@ -49,6 +53,7 @@
             public int scoreNumber { get; set; }
             public bool isSpare { get; set; }
             public bool isStrike { get; set; }
+            public int scorePosition { get; set; }
             public int FrameID { get; set; }
             public Frame Frame { get; set; }
         }

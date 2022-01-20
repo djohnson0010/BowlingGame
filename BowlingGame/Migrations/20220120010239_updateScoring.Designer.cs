@@ -3,6 +3,7 @@ using System;
 using BowlingGame.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BowlingGame.Migrations
 {
     [DbContext(typeof(BowlingGameContext))]
-    partial class BowlingGameContextModelSnapshot : ModelSnapshot
+    [Migration("20220120010239_updateScoring")]
+    partial class updateScoring
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "6.0.1");
@@ -49,9 +51,6 @@ namespace BowlingGame.Migrations
                 {
                     b.Property<int>("GameID")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<bool>("isFinished")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("playerName")

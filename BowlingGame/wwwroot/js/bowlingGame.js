@@ -18,10 +18,17 @@ function getGameList() {
     })
 }
 function getGameInformation(i) {
-    ajaxPost('/Home/getGameInformation', { id: games[i].id }, function (result) {
+    let gameID = i != null ? games[i].id : currentGame.gameID 
+    ajaxPost('/Home/getBowlingGame', { gameID: gameID }, function (result) {
         currentGame = result;
+        console.log(result);
     });
 
+}
+function bowl(score) {
+    ajaxPost('/Home/addScore', { gameID: currentGame.gameID, score }, function (result) {
+        getGameInformation();
+    })
 }
 function createBowlingGame() {
     let name = $('#txtNewGameName').val();
