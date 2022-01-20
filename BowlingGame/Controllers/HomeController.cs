@@ -154,28 +154,39 @@ namespace BowlingGame.Controllers
                 }
             }
         }
-        //public void calculateGameScores(int gameID)
-        //{
-        //    using (BowlingGameContext context = new())
-        //    {
-        //        var game = context.Games.Where(g => g.GameID == gameID).FirstOrDefault();
-        //        var frames = context.Frames.Where(f => f.GameID == gameID).ToList();
-        //        for (int frameIndx = 0; frameIndx < frames.Count(); frameIndx++)
-        //        {
-        //            var score
-        //            //int frameScoreCount = context.Scores.Where(s => s.FrameID == frames[frameIndx].scores.Count());
-        //            if (frames[frameIndx].scores.Where(s => !s.isStrike && !s.isSpare).Count() == 0)
-        //            {
+        public void calculateGameScores(int gameID)
+        {
+            using (BowlingGameContext context = new())
+            { 
+                var game = context.Games.Where(g => g.GameID == gameID).FirstOrDefault();
+                var frames = context.Frames.Where(f => f.GameID == gameID && f.isFinished).ToList();
+                for (int frameIndx = 0; frameIndx < frames.Count(); frameIndx++)
+                {
+                    List<Score> calculationScores = new List<Score>();
+                    var currentFrame = frames[frameIndx];
+                    do
+                    {
 
-        //            }
-        //            if (frameTotal == 10 && (frameIndx + 2) > frames.Count())
-        //            {
-        //                //frames[frameIndx].frameScore = frameTotal + frames[frameIndx + 1].score
-        //            }
-        //        }
-        //    }
-        //}
-            public void addFrameToGame(int gameID, int score)
+                    } while ()
+                    var scores = context.Scores.Where(s => s.FrameID == frames[frameIndx].FrameID).ToList();
+                    var frameScore = scores.Select(s => s.scoreNumber).Sum();
+                    //strike
+                    if (frameScore == 10 &&  currentFrame.frameNumber < 10)
+                    {
+                        var scoresToCount = context.Frames
+                        while()
+                        if((frameIndx+2) < frames.Count())
+                        {
+                            currentFrame + frames[frameIndx]
+                        }
+                    }
+                    //spare
+                    //10th frame
+                    
+                }
+            }
+        }
+        public void addFrameToGame(int gameID, int score)
         {
             using(BowlingGameContext context = new())
             {
