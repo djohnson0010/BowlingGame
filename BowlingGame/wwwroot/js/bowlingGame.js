@@ -18,11 +18,14 @@ function getGameList() {
         })
     })
 }
+//Get selected Game
 function getGameInformation(id) {
     let gameID = id
+    //send request to get information
     ajaxPost('/Home/getBowlingGame', { gameID: gameID }, function (result) {
         console.log(result);
         currentGame = result;
+        //empty table for appending
         $('#tblGameInformation thead').empty();
         $('#tblGameInformation tbody').empty();
         let rowFrames = '<tr><th>Frames</th>'
@@ -31,7 +34,9 @@ function getGameInformation(id) {
         for (frame = 0; frame < 10; frame++)
         {
             let currentFrame = currentGame.Frames[frame];
+            //colspan to check if last frame for 3 scores
             let colspan = frame == 9 ? 3 : 2;
+            //assign scores to each cell of frame
             rowFrames += '<th colspan="' + colspan + '">' + (frame + 1) + '</th>';
                 let frameScore1 = currentFrame != null && currentFrame.scores[0] != null ? convertScore(currentFrame.scores[0])  : '';
             let frameScore2 = currentFrame != null &&  currentFrame.scores[1] != null ? convertScore(currentFrame.scores[1]) : '';
@@ -42,9 +47,10 @@ function getGameInformation(id) {
             else {
                 rowScores += '<td>' + frameScore1 + '</td><td>' + frameScore2 +'</td>'
             }
-            
+            //assign points to table if available
             rowPoints += '<td colspan="'+colspan+'">' + (currentFrame != null ? currentFrame.frameScore : '') + '</td>'
         }
+        //apppend rows to table to show score
         $('#tblGameInformation thead').append(rowFrames)
         $('#tblGameInformation tbody').append(rowScores)
         $('#tblGameInformation tbody').append(rowPoints)
@@ -52,25 +58,35 @@ function getGameInformation(id) {
     });
 
 }
+//convert score to spare or strike symbols
 function convertScore(score) {
+
     return (score.isStrike ? 'X': score.isSpare ? '/' : score.scoreNumber)
 }
+//call bowl with a random number between 0 and number of pins
 function bowlBall() {
     bowl(Math.floor(Math.random() * (currentGame.bowlingPins+1)))
 }
+
+//call server to add score
 function bowl(score) {
     ajaxPost('/Home/addScore', { gameID: currentGame.gameID, score }, function (result) {
         getGameInformation(currentGame.gameID);
     })
 }
+//create the game from name in textbox
 function createBowlingGame() {
     let name = $('#txtNewGameName').val();
     ajaxPost('/Home/CreateBowlingGame', { name }, function (result) {
         if (result.code == 1) {
             $('#mdlNewBowlingGame').modal('hide');
+            //get list of available bowling games
             getGameList();
+            //show alert for successfully creating a game
             swal.fire('Your game has been created', '', 'success')
+            //get bowling game information
             getGameInformation(result.gameID)
+            $('#txtNewGameName').val('');
         }          
 
         else {
@@ -83,6 +99,7 @@ function populateGameInformation() {
 }
 function deleteGame(i) {
     let id = games[i].id;
+    //show confirmation for deleting selected bowling game
     Swal.fire({
         title: 'Are you sure you want to delete bowling game #'+id+'?',
         text: "You won't be able to revert this!",
