@@ -27,7 +27,6 @@
         {
             public int GameID { get; set; }
             public string playerName { get; set; }
-            public int? score { get; set; }
             public bool isFinished { get; set; }
 
             public List<Frame> Frames { get; } = new();

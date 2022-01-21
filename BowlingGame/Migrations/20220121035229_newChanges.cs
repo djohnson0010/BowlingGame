@@ -4,7 +4,7 @@
 
 namespace BowlingGame.Migrations
 {
-    public partial class tableConnection : Migration
+    public partial class newChanges : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {

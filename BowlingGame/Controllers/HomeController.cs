@@ -36,7 +36,6 @@ namespace BowlingGame.Controllers
                     dynamic game = new ExpandoObject();
                     game.id = x.GameID;
                     game.name = x.playerName;
-                    game.score = x.score ?? 0;
                     return game;
                 }).ToList();
                 return gameList;
@@ -109,7 +108,7 @@ namespace BowlingGame.Controllers
                         }
                         //check if frame is finished
                         frame.isFinished = f.isFinished;
-                        
+                       
                         return frame;
 
                     }).ToList();

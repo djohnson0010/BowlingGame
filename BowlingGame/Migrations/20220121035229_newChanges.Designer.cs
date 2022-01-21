@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BowlingGame.Migrations
 {
     [DbContext(typeof(BowlingGameContext))]
-    [Migration("20220119005736_AddFrameFlagsCreatedTimestamp")]
-    partial class AddFrameFlagsCreatedTimestamp
+    [Migration("20220121035229_newChanges")]
+    partial class newChanges
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -27,13 +27,16 @@ namespace BowlingGame.Migrations
                     b.Property<int>("GameID")
                         .HasColumnType("INTEGER");
 
-                    b.Property<bool>("isSpare")
+                    b.Property<int>("frameNumber")
                         .HasColumnType("INTEGER");
 
-                    b.Property<bool>("isStrike")
+                    b.Property<int>("frameScore")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("score")
+                    b.Property<bool>("isFinished")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("isScored")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("FrameID");
@@ -49,6 +52,9 @@ namespace BowlingGame.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<bool>("isFinished")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("playerName")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -56,6 +62,34 @@ namespace BowlingGame.Migrations
                     b.HasKey("GameID");
 
                     b.ToTable("Games");
+                });
+
+            modelBuilder.Entity("BowlingGame.Models.Score", b =>
+                {
+                    b.Property<int>("scoreID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("FrameID")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("isSpare")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("isStrike")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("scoreNumber")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("scorePosition")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("scoreID");
+
+                    b.HasIndex("FrameID");
+
+                    b.ToTable("Scores");
                 });
 
             modelBuilder.Entity("BowlingGame.Models.Frame", b =>
@@ -67,6 +101,22 @@ namespace BowlingGame.Migrations
                         .IsRequired();
 
                     b.Navigation("Game");
+                });
+
+            modelBuilder.Entity("BowlingGame.Models.Score", b =>
+                {
+                    b.HasOne("BowlingGame.Models.Frame", "Frame")
+                        .WithMany("scores")
+                        .HasForeignKey("FrameID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Frame");
+                });
+
+            modelBuilder.Entity("BowlingGame.Models.Frame", b =>
+                {
+                    b.Navigation("scores");
                 });
 
             modelBuilder.Entity("BowlingGame.Models.Game", b =>

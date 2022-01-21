@@ -15,7 +15,7 @@ function getGameList() {
         let tblGameList = $('#tblGameList tbody');
         tblGameList.empty();
         $.each(games, function (i, d) {
-            tblGameList.append('<tr><td>' + d.id + '</td><td>' + d.name + '</td><td>' + (d.score ?? '') + '</td><td><button class="btn btn-primary" onclick="getGameInformation('+d.id+')">Continue</button><button class="btn btn-danger" onclick="deleteGame('+i+')">Delete</button></td>');
+            tblGameList.append('<tr><td>' + d.id + '</td><td>' + d.name + '</td><td><button class="btn btn-primary" onclick="getGameInformation('+d.id+')">Continue</button><button class="btn btn-danger" onclick="deleteGame('+i+')">Delete</button></td>');
         })
     })
 }
@@ -75,6 +75,7 @@ function bowlBall() {
 function bowl(score) {
     ajaxPost('/Home/addScore', { gameID: currentGame.gameID, score }, function (result) {
         getGameInformation(currentGame.gameID);
+        getGameList();
     })
 }
 //create the game from name in textbox
