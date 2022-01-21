@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 using System.Dynamic;
+using Microsoft.EntityFrameworkCore;
 
 namespace BowlingGame.Controllers
 {
@@ -50,7 +51,7 @@ namespace BowlingGame.Controllers
                 };
                 context.Games.Add(game);
                 context.SaveChanges();
-                return new { code = 1 };
+                return new { code = 1, gameID = game.GameID };
             }
            
         }
@@ -61,29 +62,31 @@ namespace BowlingGame.Controllers
             using(BowlingGameContext context = new())
             {
                 dynamic bowlingGame = new ExpandoObject();
-                bowlingGame = context.Games.Where(g => g.GameID == gameID).ToList().Select(x =>
+                bowlingGame = context.Games.Where(g => g.GameID == gameID).Include(g => g.Frames).ThenInclude(g => g.scores).ToList().Select(x =>
                 {
                     dynamic game = new ExpandoObject();
                     int bowlingPins = 10;
                     game.name = x.playerName;
                     game.gameID = x.GameID;
                     game.isFinished = x.isFinished;
-                    game.Frames = context.Frames.Where(f => f.GameID == gameID).ToList().Select(f =>
+                    game.Frames = x.Frames.ToList().Select(f =>
                     {
                         int frameScore = 0;
                         dynamic frame = new ExpandoObject();
                         frame.frameID = f.FrameID;
-                        frame.scores = context.Scores.Where(s => s.FrameID == f.FrameID).ToList().Select(s =>
+                        frame.scores = f.scores.Select(s =>
                         {
                             dynamic score = new ExpandoObject();
                             score.position = s.scorePosition;
                             score.scoreID = s.scoreID;
                             score.scoreNumber = s.scoreNumber;
+                            score.isSpare = s.isSpare;
+                            score.isStrike = s.isStrike;
                             frameScore += score.scoreNumber;
 
                             return score;
                         }).ToList();
-                        frame.frameScore = frameScore;
+                        frame.frameScore = f.isScored ? f.frameScore.ToString() : "";
                         if(!f.isFinished)
                         {
                             bowlingPins = 10 - (frameScore % 10);
@@ -104,10 +107,10 @@ namespace BowlingGame.Controllers
         {
             using(BowlingGameContext context = new())
             {
-                var game = context.Games.Where(g => g.GameID == gameID).FirstOrDefault();
+                var game = context.Games.Where(g => g.GameID == gameID).Include(g => g.Frames).FirstOrDefault();
                 if(game != null && !game.isFinished)
                 {
-                    var frames = context.Frames.Where(f => f.GameID == gameID).OrderByDescending(f => f.frameNumber).ToList();
+                    var frames = game.Frames.OrderByDescending(f => f.frameNumber).ToList();
                     if((frames.Count() == 0) || frames.First().isFinished)
                     {
                         addFrameToGame(gameID, score);
@@ -119,7 +122,7 @@ namespace BowlingGame.Controllers
                         addScoreToFrame(frameID, frameNumber, score);
                     }
                 }
-
+                calculateGameScores(gameID);
             }
         }
         public void addScoreToFrame(int frameID, int frameNumber, int score)
@@ -157,33 +160,62 @@ namespace BowlingGame.Controllers
         public void calculateGameScores(int gameID)
         {
             using (BowlingGameContext context = new())
-            { 
-                var game = context.Games.Where(g => g.GameID == gameID).FirstOrDefault();
-                var frames = context.Frames.Where(f => f.GameID == gameID && f.isFinished).ToList();
-                for (int frameIndx = 0; frameIndx < frames.Count(); frameIndx++)
-                {
-                    List<Score> calculationScores = new List<Score>();
-                    var currentFrame = frames[frameIndx];
-                    do
-                    {
+            {
+                int runningScore = 0;
+                var game = context.Games.Where(g => g.GameID == gameID).Include(g => g.Frames.Where(f => f.isFinished)).ThenInclude(f => f.scores).FirstOrDefault();
+                var frames = game.Frames.OrderBy(f => f.frameNumber).ToList();
 
-                    } while ()
-                    var scores = context.Scores.Where(s => s.FrameID == frames[frameIndx].FrameID).ToList();
-                    var frameScore = scores.Select(s => s.scoreNumber).Sum();
-                    //strike
-                    if (frameScore == 10 &&  currentFrame.frameNumber < 10)
+                for (int frameIndx = 0; frameIndx < frames.Count; frameIndx++)
+                {
+                    int framescoreIndex = frameIndx;
+                    List<Score> futureScores = new List<Score>();
+                    var currentFrame = game.Frames[frameIndx];
+                    var frameScore = game.Frames[frameIndx].scores.Select(s => s.scoreNumber).Sum();
+                    var futureFrames = frames.Where(f => f.frameNumber > currentFrame.frameNumber).OrderBy(f => f.frameNumber).ToList();
+                    foreach(var frame in futureFrames)
                     {
-                        var scoresToCount = context.Frames
-                        while()
-                        if((frameIndx+2) < frames.Count())
+                        futureScores.AddRange(frame.scores.OrderBy(s => s.scorePosition));
+                    }
+                    if(currentFrame.frameNumber != 10)
+                    {
+                        if (frameScore < 10)
                         {
-                            currentFrame + frames[frameIndx]
+                            runningScore += frameScore;
+                            currentFrame.frameScore = runningScore;
+                            currentFrame.isScored = true;
+                        }
+                        else if (frameScore == 10)
+                        {
+                            if (currentFrame.scores.Count == 1 && futureScores.Count >= 2)
+                            {
+                                runningScore += 10 + futureScores.Take(2).Select(s => s.scoreNumber).Sum();
+                                currentFrame.frameScore = runningScore;
+                                currentFrame.isScored = true;
+                            }
+                            else if (currentFrame.scores.Count == 2 && futureScores.Count >= 1)
+                            {
+                                runningScore += 10 + futureScores.Take(1).Select(s => s.scoreNumber).Sum();
+                                currentFrame.frameScore = runningScore;
+                                currentFrame.isScored = true;
+                            }
+
+
                         }
                     }
-                    //spare
-                    //10th frame
+                    else 
+                    {
+
+                        runningScore += currentFrame.scores.Select(s => s.scoreNumber).Sum();
+                        currentFrame.frameScore = runningScore;
+                        currentFrame.isScored = true;
+                        game.isFinished = true;
+                    }
                     
+
+
+
                 }
+                context.SaveChanges();
             }
         }
         public void addFrameToGame(int gameID, int score)

@@ -43,7 +43,7 @@
             public bool isFinished { get; set; }
             public bool isScored { get; set; }
             public int frameScore { get; set; }
-            public List<Score> scores { get; set; }
+        public List<Score> scores { get; } = new();
             public int GameID { get; set; }
             public Game Game { get; set; }
         }
