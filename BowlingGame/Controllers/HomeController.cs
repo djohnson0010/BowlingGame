@@ -17,6 +17,11 @@ namespace BowlingGame.Controllers
 
         public IActionResult Index()
         {
+            using(BowlingGameContext context = new())
+            {
+                context.Database.EnsureCreated();
+            }
+            
             return View();
         }
         [HttpGet]
