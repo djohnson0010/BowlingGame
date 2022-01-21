@@ -69,7 +69,8 @@ namespace BowlingGame.Controllers
         public dynamic getBowlingGame(int gameID)
         {
             int totalScore = 0;
-            using(BowlingGameContext context = new())
+            int bowlingPins = 10;
+            using (BowlingGameContext context = new())
             {
                 dynamic bowlingGame = new ExpandoObject();
                 //get game information
@@ -77,10 +78,11 @@ namespace BowlingGame.Controllers
                 {
                     dynamic game = new ExpandoObject();
                     //bowling pin number for allowable pins
-                    int bowlingPins = 10;
+                    
                     game.name = x.playerName;
                     game.gameID = x.GameID;
                     game.isFinished = x.isFinished;
+                    
                     game.Frames = x.Frames.ToList().Select(f =>
                     {
                         int frameScore = 0;
@@ -100,6 +102,7 @@ namespace BowlingGame.Controllers
                         }).ToList();
                         //return empty string if frame hasn't been scored
                         frame.frameScore = f.isScored ? f.frameScore.ToString() : "";
+                        totalScore += frameScore;
                         if(!f.isFinished)
                         {
                             bowlingPins = 10 - (frameScore % 10);
@@ -146,7 +149,23 @@ namespace BowlingGame.Controllers
                 calculateGameScores(gameID);
             }
         }
-        //Add new score to Frame
+        public void addFrameToGame(int gameID, int score)
+        {
+            using (BowlingGameContext context = new())
+            {
+                int frameNumber = context.Frames.Where(f => f.GameID == gameID).Count() + 1;
+                Frame newFrame = new Frame
+                {
+                    GameID = gameID,
+                    frameNumber = frameNumber,
+
+                };
+                context.Frames.Add(newFrame);
+                context.SaveChanges();
+
+                addScoreToFrame(newFrame.FrameID, frameNumber, score);
+            }
+        }
         public void addScoreToFrame(int frameID, int frameNumber, int score)
         {
             using(BowlingGameContext context = new())
@@ -183,6 +202,29 @@ namespace BowlingGame.Controllers
                 }
             }
         }
+       
+       
+        [HttpPost]
+        public dynamic deleteGame(int id)
+        {
+            using(BowlingGameContext context = new())
+            {
+                var game = context.Games.Where(g => g.GameID == id).FirstOrDefault();
+                if (game != null)
+                {
+                    context.Games.Remove(game);
+                    context.SaveChanges();
+                    return new { code = 1 };
+                }
+                else
+                {
+                    return new { code = 0, message = "An error occured deleting your game. Please refresh and try again" };
+
+
+                }
+
+            }
+        }
         //calculate scores to game for scorecard
         public void calculateGameScores(int gameID)
         {
@@ -199,19 +241,19 @@ namespace BowlingGame.Controllers
                 {
                     //create variable to hold scores for calculating strike and spare frames
                     List<Score> futureScores = new List<Score>();
-                    
+
                     var currentFrame = game.Frames[frameIndx];
                     //get current frame score
                     var frameScore = game.Frames[frameIndx].scores.Select(s => s.scoreNumber).Sum();
                     //add up all scores from future frames for sprike and spare calculations
                     var futureFrames = frames.Where(f => f.frameNumber > currentFrame.frameNumber).OrderBy(f => f.frameNumber).ToList();
                     //add scores from game to a list
-                    foreach(var frame in futureFrames)
+                    foreach (var frame in futureFrames)
                     {
                         futureScores.AddRange(frame.scores.OrderBy(s => s.scorePosition));
                     }
                     //check if frame is not 10 for strike and spare calculations
-                    if(currentFrame.frameNumber != 10)
+                    if (currentFrame.frameNumber != 10)
                     {
                         //check if score for frame is less than 10 and calculate by sum
                         if (frameScore < 10)
@@ -235,14 +277,14 @@ namespace BowlingGame.Controllers
                             {
                                 //get first score after current frame for calculation
                                 runningScore += 10 + futureScores.Take(1).Select(s => s.scoreNumber).Sum();
-                                
+
                                 currentFrame.frameScore = runningScore;
                                 currentFrame.isScored = true;
                             }
                         }
                     }
                     //calculate for tenth frame with adding all parts up
-                    else 
+                    else
                     {
 
                         runningScore += currentFrame.scores.Select(s => s.scoreNumber).Sum();
@@ -250,50 +292,12 @@ namespace BowlingGame.Controllers
                         currentFrame.isScored = true;
                         game.isFinished = true;
                     }
-                    
+
 
 
 
                 }
                 context.SaveChanges();
-            }
-        }
-        public void addFrameToGame(int gameID, int score)
-        {
-            using(BowlingGameContext context = new())
-            {
-                int frameNumber = context.Frames.Where(f => f.GameID == gameID).Count() +1;
-                Frame newFrame = new Frame
-                {
-                    GameID = gameID,
-                    frameNumber = frameNumber,
-
-                };
-                context.Frames.Add(newFrame);
-                context.SaveChanges();
-                
-                addScoreToFrame(newFrame.FrameID, frameNumber, score);
-            }
-        }
-        [HttpPost]
-        public dynamic deleteGame(int id)
-        {
-            using(BowlingGameContext context = new())
-            {
-                var game = context.Games.Where(g => g.GameID == id).FirstOrDefault();
-                if (game != null)
-                {
-                    context.Games.Remove(game);
-                    context.SaveChanges();
-                    return new { code = 1 };
-                }
-                else
-                {
-                    return new { code = 0, message = "An error occured deleting your game. Please refresh and try again" };
-
-
-                }
-
             }
         }
     }

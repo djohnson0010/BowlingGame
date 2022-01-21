@@ -3,6 +3,7 @@ var currentGame;
 var remainingPins;
 $(function () {
     getGameList();
+    $('#btnBowlBall').prop('disabled', true);
 });
 function showNewBowlingGame() {
     console.log('showing new bowling game')
@@ -23,8 +24,10 @@ function getGameInformation(id) {
     let gameID = id
     //send request to get information
     ajaxPost('/Home/getBowlingGame', { gameID: gameID }, function (result) {
+        
         console.log(result);
         currentGame = result;
+        $('#btnBowlBall').prop('disabled', false);
         //empty table for appending
         $('#tblGameInformation thead').empty();
         $('#tblGameInformation tbody').empty();
@@ -119,6 +122,11 @@ function deleteGame(i) {
                         'success'
                     )
                     getGameList();
+                    if (currentGame.gameID == id) {
+                        $('#btnBowlBall').prop('disabled', true);
+                        $('#tblGameInformation thead').empty();
+                        $('#tblGameInformation tbody').empty();
+                    }
                 }
                    
                 else {
