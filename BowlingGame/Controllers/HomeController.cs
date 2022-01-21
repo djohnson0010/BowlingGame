@@ -203,8 +203,6 @@ namespace BowlingGame.Controllers
                                 currentFrame.frameScore = runningScore;
                                 currentFrame.isScored = true;
                             }
-
-
                         }
                     }
                     else 
